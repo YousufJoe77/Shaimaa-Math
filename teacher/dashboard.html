@@ -273,8 +273,6 @@
         color: white;
       }
 
-      /* زر الحذف فقط */
-
       .delete-btn {
         border: none;
         background: #ffecec;
@@ -340,7 +338,6 @@
       <div class="header-inner">
         <div class="brand">
           <h1>ميس شيماء ماث</h1>
-
           <p>لوحة متابعة الواجبات المرسلة</p>
         </div>
 
@@ -353,19 +350,15 @@
     <main class="container">
       <div id="errorBox" class="error"></div>
 
-      <!-- القائمة الرئيسية -->
-
       <section id="mainView">
         <div class="stats">
           <div class="stat-card">
             <div class="stat-title">عدد الطلاب الذين أرسلوا الواجب</div>
-
             <div class="stat-number" id="studentsCount">0</div>
           </div>
 
           <div class="stat-card">
             <div class="stat-title">إجمالي الملفات المرفوعة</div>
-
             <div class="stat-number" id="filesCount">0</div>
           </div>
         </div>
@@ -376,8 +369,6 @@
           <div class="loading">جاري تحميل البيانات...</div>
         </div>
       </section>
-
-      <!-- تفاصيل الطالب -->
 
       <section id="detailsView" class="details">
         <button class="back-btn" onclick="showMainView()">
@@ -390,367 +381,648 @@
       </section>
     </main>
 
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <script>
-      const API_URL =
-  "https://crispy-space-barnacle-g4r5j4qjxx5gf9v55-3000.app.github.dev";
+      /* ================================
+         SUPABASE
+      ================================= */
+
+      const SUPABASE_URL =
+        "https://cvnuvpufmhnbqqaijkon.supabase.co";
+
+      const SUPABASE_PUBLISHABLE_KEY =
+        "sb_publishable_m9cqEKWKkjDOizTNzvk4eQ_2AFu9rH0";
+
+      const supabaseClient = window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_PUBLISHABLE_KEY
+      );
+
+      const BUCKET_NAME = "homework";
 
       let submissions = [];
 
-      /* تحميل كل الواجبات */
+
+      /* ================================
+         تحميل الواجبات
+      ================================= */
 
       async function loadSubmissions() {
-        const container = document.getElementById("studentsContainer");
+        const container =
+          document.getElementById("studentsContainer");
 
-        const errorBox = document.getElementById("errorBox");
+        const errorBox =
+          document.getElementById("errorBox");
 
         errorBox.style.display = "none";
 
         container.innerHTML = `
-        <div class="loading">
+          <div class="loading">
             جاري تحميل البيانات...
-        </div>
-    `;
+          </div>
+        `;
 
         try {
-          const response = await fetch(`${API_URL}/submissions`);
+          const { data, error } = await supabaseClient
+            .from("submissions")
+            .select(`
+              id,
+              student_name,
+              stage,
+              submitted_at,
+              submission_files (
+                id,
+                original_name,
+                storage_path,
+                created_at
+              )
+            `)
+            .order("submitted_at", {
+              ascending: false
+            });
 
-          if (!response.ok) {
-            throw new Error("فشل الاتصال بالسيرفر");
+          if (error) {
+            throw error;
           }
 
-          const data = await response.json();
+          submissions = (data || []).map((submission) => {
+            return {
+              id: submission.id,
 
-          if (!data.success) {
-            throw new Error(data.message || "حدث خطأ");
-          }
+              studentName:
+                submission.student_name,
 
-          submissions = data.submissions || [];
+              stage:
+                submission.stage,
+
+              submittedAt:
+                submission.submitted_at,
+
+              files:
+                (submission.submission_files || []).map(
+                  (file) => {
+                    const publicUrl =
+                      supabaseClient.storage
+                        .from(BUCKET_NAME)
+                        .getPublicUrl(
+                          file.storage_path
+                        ).data.publicUrl;
+
+                    return {
+                      id: file.id,
+
+                      originalName:
+                        file.original_name,
+
+                      storagePath:
+                        file.storage_path,
+
+                      createdAt:
+                        file.created_at,
+
+                      url:
+                        publicUrl
+                    };
+                  }
+                )
+            };
+          });
 
           renderStudents();
+
         } catch (error) {
-          console.error(error);
+          console.error(
+            "Supabase error:",
+            error
+          );
 
           container.innerHTML = "";
 
           errorBox.textContent =
-            "مش قادر أوصل للسيرفر. تأكد إن node server.js شغال.";
+            "حصل خطأ أثناء تحميل البيانات من Supabase: " +
+            (error.message || "خطأ غير معروف");
 
           errorBox.style.display = "block";
         }
       }
 
-      /* عرض الطلاب */
+
+      /* ================================
+         عرض الطلاب
+      ================================= */
 
       function renderStudents() {
-        const container = document.getElementById("studentsContainer");
+        const container =
+          document.getElementById("studentsContainer");
 
-        const studentsCount = document.getElementById("studentsCount");
+        const studentsCount =
+          document.getElementById("studentsCount");
 
-        const filesCount = document.getElementById("filesCount");
+        const filesCount =
+          document.getElementById("filesCount");
 
-        studentsCount.textContent = submissions.length;
+        studentsCount.textContent =
+          submissions.length;
 
         let totalFiles = 0;
 
         submissions.forEach((submission) => {
           if (submission.files) {
-            totalFiles += submission.files.length;
+            totalFiles +=
+              submission.files.length;
           }
         });
 
-        filesCount.textContent = totalFiles;
+        filesCount.textContent =
+          totalFiles;
 
-        /* لا يوجد طلاب */
 
         if (submissions.length === 0) {
           container.innerHTML = `
-
             <div class="empty">
+              <div class="empty-icon">
+                📭
+              </div>
 
-                <div class="empty-icon">
-                    📭
-                </div>
+              <h3>
+                لا توجد واجبات مرسلة حتى الآن
+              </h3>
 
-                <h3>
-                    لا توجد واجبات مرسلة حتى الآن
-                </h3>
-
-                <p>
-                    عندما يقوم أحد الطلاب بإرسال واجبه سيظهر هنا.
-                </p>
-
+              <p>
+                عندما يقوم أحد الطلاب بإرسال واجبه سيظهر هنا.
+              </p>
             </div>
-
-        `;
+          `;
 
           return;
         }
 
+
         container.innerHTML = "";
 
-        submissions.forEach((submission) => {
-          const card = document.createElement("div");
 
-          card.className = "student-card";
+        submissions.forEach((submission) => {
+          const card =
+            document.createElement("div");
+
+          card.className =
+            "student-card";
+
 
           card.onclick = function () {
-            showStudent(submission.id);
+            showStudent(
+              submission.id
+            );
           };
 
-          const firstLetter = submission.studentName
-            ? submission.studentName.trim().charAt(0)
-            : "ط";
 
-          const filesNumber = submission.files ? submission.files.length : 0;
+          const firstLetter =
+            submission.studentName
+              ? submission.studentName
+                  .trim()
+                  .charAt(0)
+              : "ط";
+
+
+          const filesNumber =
+            submission.files
+              ? submission.files.length
+              : 0;
+
 
           card.innerHTML = `
-
             <div class="student-info">
 
-                <div class="student-icon">
+              <div class="student-icon">
+                ${escapeHTML(firstLetter)}
+              </div>
 
-                    ${escapeHTML(firstLetter)}
+              <div>
 
+                <div class="student-name">
+                  ${escapeHTML(
+                    submission.studentName
+                  )}
                 </div>
 
-
-                <div>
-
-                    <div class="student-name">
-
-                        ${escapeHTML(submission.studentName)}
-
-                    </div>
-
-
-                    <div class="student-stage">
-
-                        ${escapeHTML(submission.stage)}
-
-                    </div>
-
+                <div class="student-stage">
+                  ${escapeHTML(
+                    submission.stage
+                  )}
                 </div>
+
+              </div>
 
             </div>
-
 
             <div class="files-count">
-
-                ${filesNumber} ملف
-
+              ${filesNumber} ملف
             </div>
+          `;
 
-        `;
 
           container.appendChild(card);
         });
       }
 
-      /* فتح تفاصيل طالب */
+
+      /* ================================
+         فتح تفاصيل الطالب
+      ================================= */
 
       function showStudent(id) {
-        const submission = submissions.find((item) => item.id === id);
+        const submission =
+          submissions.find(
+            (item) =>
+              item.id === id
+          );
+
 
         if (!submission) {
           return;
         }
 
-        document.getElementById("mainView").style.display = "none";
 
-        document.getElementById("detailsView").style.display = "block";
+        document.getElementById(
+          "mainView"
+        ).style.display = "none";
 
-        const studentHeader = document.getElementById("studentHeader");
 
-        const date = new Date(submission.submittedAt);
+        document.getElementById(
+          "detailsView"
+        ).style.display = "block";
 
-        const formattedDate = date.toLocaleString("ar-EG");
+
+        const studentHeader =
+          document.getElementById(
+            "studentHeader"
+          );
+
+
+        const date =
+          new Date(
+            submission.submittedAt
+          );
+
+
+        const formattedDate =
+          date.toLocaleString(
+            "ar-EG"
+          );
+
 
         studentHeader.innerHTML = `
+          <h2>
+            ${escapeHTML(
+              submission.studentName
+            )}
+          </h2>
 
-        <h2>
+          <p>
+            ${escapeHTML(
+              submission.stage
+            )}
+          </p>
 
-            ${escapeHTML(submission.studentName)}
-
-        </h2>
-
-
-        <p>
-
-            ${escapeHTML(submission.stage)}
-
-        </p>
-
-
-        <p style="margin-top:8px;">
-
+          <p style="margin-top:8px;">
             وقت الإرسال:
-            ${escapeHTML(formattedDate)}
+            ${escapeHTML(
+              formattedDate
+            )}
+          </p>
+        `;
 
-        </p>
 
-    `;
+        const fileList =
+          document.getElementById(
+            "fileList"
+          );
 
-        const fileList = document.getElementById("fileList");
 
         fileList.innerHTML = "";
 
-        if (!submission.files || submission.files.length === 0) {
+
+        if (
+          !submission.files ||
+          submission.files.length === 0
+        ) {
           fileList.innerHTML = `
-
             <div class="empty">
-
-                لا توجد ملفات لهذا الواجب.
-
+              لا توجد ملفات لهذا الواجب.
             </div>
-
-        `;
+          `;
 
           return;
         }
 
-        submission.files.forEach((file, index) => {
-          const card = document.createElement("div");
 
-          card.className = "file-card";
+        submission.files.forEach(
+          (file) => {
 
-          const safeURL = file.url.replace("http://localhost:3000", API_URL);
-
-          card.innerHTML = `
-
-                <div class="file-name">
-
-                    📄
-                    ${escapeHTML(file.originalName)}
-
-                </div>
+            const card =
+              document.createElement(
+                "div"
+              );
 
 
-                <div class="file-actions">
-
-                    <a
-                        class="file-btn open-btn"
-                        href="${safeURL}"
-                        target="_blank"
-                    >
-                        فتح
-                    </a>
+            card.className =
+              "file-card";
 
 
-                    <a
-                        class="file-btn download-btn"
-                        href="${safeURL}"
-                        download="${escapeHTML(file.originalName)}"
-                    >
-                        تحميل
-                    </a>
+            card.innerHTML = `
+              <div class="file-name">
+                📄
+                ${escapeHTML(
+                  file.originalName
+                )}
+              </div>
 
+              <div class="file-actions">
 
-                    <button
-                        class="file-btn delete-btn"
-                        onclick="deleteFile(
-                            '${submission.id}',
-                            ${index}
-                        )"
-                    >
-                        حذف
-                    </button>
+                <a
+                  class="file-btn open-btn"
+                  href="${escapeHTML(
+                    file.url
+                  )}"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  فتح
+                </a>
 
-                </div>
+                <a
+                  class="file-btn download-btn"
+                  href="${escapeHTML(
+                    file.url
+                  )}"
+                  target="_blank"
+                  download
+                >
+                  تحميل
+                </a>
 
+                <button
+                  class="file-btn delete-btn"
+                  onclick="deleteFile(
+                    '${file.id}',
+                    '${escapeJS(
+                      file.storagePath
+                    )}',
+                    '${escapeJS(
+                      submission.id
+                    )}'
+                  )"
+                >
+                  حذف
+                </button>
+
+              </div>
             `;
 
-          fileList.appendChild(card);
-        });
+
+            fileList.appendChild(card);
+          }
+        );
       }
 
-      /* حذف ملف */
 
-      async function deleteFile(submissionId, fileIndex) {
-        const confirmDelete = confirm("هل أنت متأكد من حذف هذا الملف؟");
+      /* ================================
+         حذف ملف
+      ================================= */
+
+      async function deleteFile(
+        fileId,
+        storagePath,
+        submissionId
+      ) {
+
+        const confirmDelete =
+          confirm(
+            "هل أنت متأكد من حذف هذا الملف؟"
+          );
+
 
         if (!confirmDelete) {
           return;
         }
 
+
         try {
-          const response = await fetch(
-            `${API_URL}/submissions/${submissionId}/files/${fileIndex}`,
-            {
-              method: "DELETE",
-            },
-          );
 
-          const data = await response.json();
+          /* حذف الملف من Storage */
 
-          if (!response.ok || !data.success) {
-            throw new Error(data.message || "حدث خطأ أثناء حذف الملف");
+          const {
+            error: storageError
+          } = await supabaseClient
+            .storage
+            .from(BUCKET_NAME)
+            .remove([
+              storagePath
+            ]);
+
+
+          if (storageError) {
+            throw storageError;
           }
 
-          alert("تم حذف الملف بنجاح");
 
-          /*
-            نعيد تحميل البيانات
-            من السيرفر
-        */
+          /* حذف بيانات الملف من الجدول */
+
+          const {
+            error: fileError
+          } = await supabaseClient
+            .from("submission_files")
+            .delete()
+            .eq(
+              "id",
+              fileId
+            );
+
+
+          if (fileError) {
+            throw fileError;
+          }
+
+
+          /* التأكد هل ما زالت هناك ملفات للطالب */
+
+          const {
+            data: remainingFiles,
+            error: remainingError
+          } = await supabaseClient
+            .from("submission_files")
+            .select("id")
+            .eq(
+              "submission_id",
+              submissionId
+            );
+
+
+          if (remainingError) {
+            throw remainingError;
+          }
+
+
+          /* لو آخر ملف اتمسح نحذف الطالب */
+
+          if (
+            !remainingFiles ||
+            remainingFiles.length === 0
+          ) {
+
+            const {
+              error: submissionError
+            } = await supabaseClient
+              .from("submissions")
+              .delete()
+              .eq(
+                "id",
+                submissionId
+              );
+
+
+            if (submissionError) {
+              throw submissionError;
+            }
+          }
+
+
+          alert(
+            "تم حذف الملف بنجاح ✅"
+          );
+
 
           await loadSubmissions();
 
-          /*
-            نجيب نسخة الطالب الجديدة
-        */
 
-          const updatedSubmission = submissions.find(
-            (item) => item.id === submissionId,
-          );
+          const updatedSubmission =
+            submissions.find(
+              (item) =>
+                item.id ===
+                submissionId
+            );
 
-          /*
-            لو الطالب لسه عنده ملفات
-            نفضل في صفحة التفاصيل
-        */
 
           if (updatedSubmission) {
-            showStudent(submissionId);
+
+            showStudent(
+              submissionId
+            );
+
           } else {
-            /*
-                لو آخر ملف اتمسح
-                الطالب نفسه اختفى
-            */
 
             showMainView();
-          }
-        } catch (error) {
-          console.error(error);
 
-          alert(error.message || "تعذر الاتصال بالسيرفر");
+          }
+
+        } catch (error) {
+
+          console.error(
+            "Delete error:",
+            error
+          );
+
+
+          alert(
+            "تعذر حذف الملف: " +
+            (
+              error.message ||
+              "حدث خطأ غير معروف"
+            )
+          );
         }
       }
 
-      /* الرجوع للقائمة */
+
+      /* ================================
+         الرجوع للقائمة
+      ================================= */
 
       function showMainView() {
-        document.getElementById("detailsView").style.display = "none";
 
-        document.getElementById("mainView").style.display = "block";
+        document.getElementById(
+          "detailsView"
+        ).style.display = "none";
+
+
+        document.getElementById(
+          "mainView"
+        ).style.display = "block";
       }
 
-      /* حماية النصوص */
+
+      /* ================================
+         حماية النصوص
+      ================================= */
 
       function escapeHTML(value) {
-        return String(value ?? "")
-          .replace(/&/g, "&amp;")
 
-          .replace(/</g, "&lt;")
-
-          .replace(/>/g, "&gt;")
-
-          .replace(/"/g, "&quot;")
-
-          .replace(/'/g, "&#039;");
+        return String(
+          value ?? ""
+        )
+          .replace(
+            /&/g,
+            "&amp;"
+          )
+          .replace(
+            /</g,
+            "&lt;"
+          )
+          .replace(
+            />/g,
+            "&gt;"
+          )
+          .replace(
+            /"/g,
+            "&quot;"
+          )
+          .replace(
+            /'/g,
+            "&#039;"
+          );
       }
 
-      /* تشغيل أول تحميل */
+
+      /* ================================
+         حماية النص داخل onclick
+      ================================= */
+
+      function escapeJS(value) {
+
+        return String(
+          value ?? ""
+        )
+          .replace(
+            /\\/g,
+            "\\\\"
+          )
+          .replace(
+            /'/g,
+            "\\'"
+          )
+          .replace(
+            /"/g,
+            '\\"'
+          )
+          .replace(
+            /\n/g,
+            "\\n"
+          )
+          .replace(
+            /\r/g,
+            "\\r"
+          );
+      }
+
+
+      /* ================================
+         تشغيل أول تحميل
+      ================================= */
 
       loadSubmissions();
+
     </script>
   </body>
 </html>
