@@ -367,308 +367,443 @@
   </div>
 
 
-  <script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-    // ==========================================
-    // رابط الـ Backend
-    // ==========================================
+<script>
+  // ==========================================
+  // SUPABASE
+  // ==========================================
 
-    const API_URL =
-      "https://crispy-space-barnacle-g4r5j4qjxx5gf9v55-3000.app.github.dev";
+  const SUPABASE_URL =
+    "https://cvnuvpufmhnbqqaijkon.supabase.co";
 
+  const SUPABASE_PUBLISHABLE_KEY =
+    "sb_publishable_m9cqEKWKkjDOizTNzvk4eQ_2AFu9rH0";
 
-    // ==========================================
-    // العناصر
-    // ==========================================
-
-    const form =
-      document.getElementById("homeworkForm");
-
-    const filesInput =
-      document.getElementById("files");
-
-    const fileList =
-      document.getElementById("fileList");
-
-    const submitBtn =
-      document.getElementById("submitBtn");
-
-    const successMessage =
-      document.getElementById("successMessage");
-
-    const errorMessage =
-      document.getElementById("errorMessage");
+  const supabaseClient =
+    window.supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_PUBLISHABLE_KEY
+    );
 
 
-    // ==========================================
-    // عرض الملفات المختارة
-    // ==========================================
+  // ==========================================
+  // العناصر
+  // ==========================================
 
-    filesInput.addEventListener("change", function () {
+  const form =
+    document.getElementById("homeworkForm");
 
-      fileList.innerHTML = "";
+  const filesInput =
+    document.getElementById("files");
 
-      if (filesInput.files.length === 0) {
+  const fileList =
+    document.getElementById("fileList");
 
-        fileList.style.display = "none";
+  const submitBtn =
+    document.getElementById("submitBtn");
 
-        return;
-      }
+  const successMessage =
+    document.getElementById("successMessage");
 
-      fileList.style.display = "block";
-
-      Array.from(filesInput.files).forEach(function (file) {
-
-        const item =
-          document.createElement("div");
-
-        item.className = "file-item";
+  const errorMessage =
+    document.getElementById("errorMessage");
 
 
-        const name =
-          document.createElement("div");
+  // ==========================================
+  // عرض الملفات المختارة
+  // ==========================================
 
-        name.className = "file-name";
+  filesInput.addEventListener("change", function () {
 
-        name.textContent = file.name;
+    fileList.innerHTML = "";
+
+    if (filesInput.files.length === 0) {
+      fileList.style.display = "none";
+      return;
+    }
+
+    fileList.style.display = "block";
+
+    Array.from(filesInput.files).forEach(function (file) {
+
+      const item =
+        document.createElement("div");
+
+      item.className = "file-item";
 
 
-        const size =
-          document.createElement("div");
+      const name =
+        document.createElement("div");
 
-        size.className = "file-size";
-
-        size.textContent =
-          formatFileSize(file.size);
+      name.className = "file-name";
+      name.textContent = file.name;
 
 
-        item.appendChild(name);
+      const size =
+        document.createElement("div");
 
-        item.appendChild(size);
+      size.className = "file-size";
+      size.textContent =
+        formatFileSize(file.size);
 
-        fileList.appendChild(item);
 
-      });
+      item.appendChild(name);
+      item.appendChild(size);
+
+      fileList.appendChild(item);
 
     });
 
+  });
 
-    // ==========================================
-    // تحويل حجم الملف
-    // ==========================================
 
-    function formatFileSize(bytes) {
+  // ==========================================
+  // حجم الملف
+  // ==========================================
 
-      if (bytes < 1024) {
-        return bytes + " B";
-      }
+  function formatFileSize(bytes) {
 
-      if (bytes < 1024 * 1024) {
+    if (bytes < 1024) {
+      return bytes + " B";
+    }
 
-        return (
-          bytes / 1024
-        ).toFixed(1) + " KB";
-
-      }
+    if (bytes < 1024 * 1024) {
 
       return (
-        bytes / (1024 * 1024)
-      ).toFixed(1) + " MB";
+        bytes / 1024
+      ).toFixed(1) + " KB";
 
     }
 
+    return (
+      bytes / (1024 * 1024)
+    ).toFixed(1) + " MB";
 
-    // ==========================================
-    // إخفاء الرسائل
-    // ==========================================
-
-    function hideMessages() {
-
-      successMessage.style.display = "none";
-
-      errorMessage.style.display = "none";
-
-    }
+  }
 
 
-    // ==========================================
-    // إرسال الواجب
-    // ==========================================
+  // ==========================================
+  // إخفاء الرسائل
+  // ==========================================
 
-    form.addEventListener(
-      "submit",
-      async function (event) {
+  function hideMessages() {
 
-        event.preventDefault();
+    successMessage.style.display = "none";
+    errorMessage.style.display = "none";
 
-        hideMessages();
-
-
-        const studentName =
-          document
-            .getElementById("studentName")
-            .value
-            .trim();
+  }
 
 
-        const stage =
-          document.getElementById("stage").value;
+  // ==========================================
+  // تنظيف اسم الملف
+  // ==========================================
+
+  function cleanFileName(fileName) {
+
+    return fileName
+      .replace(/[^\u0600-\u06FFa-zA-Z0-9._-]/g, "_")
+      .replace(/_+/g, "_");
+
+  }
 
 
-        // التحقق من الاسم
+  // ==========================================
+  // إرسال الواجب
+  // ==========================================
 
-        if (!studentName) {
+  form.addEventListener(
+    "submit",
+    async function (event) {
 
-          errorMessage.textContent =
-            "من فضلك اكتب اسم الطالب";
+      event.preventDefault();
 
-          errorMessage.style.display =
-            "block";
+      hideMessages();
 
-          return;
+
+      const studentName =
+        document
+          .getElementById("studentName")
+          .value
+          .trim();
+
+
+      const stage =
+        document
+          .getElementById("stage")
+          .value;
+
+
+      // ==========================================
+      // التحقق
+      // ==========================================
+
+      if (!studentName) {
+
+        errorMessage.textContent =
+          "من فضلك اكتب اسم الطالب";
+
+        errorMessage.style.display =
+          "block";
+
+        return;
+
+      }
+
+
+      if (!stage) {
+
+        errorMessage.textContent =
+          "من فضلك اختر المرحلة الدراسية";
+
+        errorMessage.style.display =
+          "block";
+
+        return;
+
+      }
+
+
+      if (filesInput.files.length === 0) {
+
+        errorMessage.textContent =
+          "من فضلك اختر ملف واحد على الأقل";
+
+        errorMessage.style.display =
+          "block";
+
+        return;
+
+      }
+
+
+      // ==========================================
+      // بدء الرفع
+      // ==========================================
+
+      submitBtn.disabled = true;
+
+      submitBtn.textContent =
+        "جاري إرسال الواجب...";
+
+
+      let submissionId = null;
+
+      const uploadedPaths = [];
+
+
+      try {
+
+        // ==========================================
+        // 1. إنشاء تسليم جديد
+        // ==========================================
+
+        const {
+          data: submission,
+          error: submissionError
+        } = await supabaseClient
+          .from("submissions")
+          .insert({
+            student_name: studentName,
+            stage: stage
+          })
+          .select("id")
+          .single();
+
+
+        if (submissionError) {
+
+          console.error(
+            "Submission error:",
+            submissionError
+          );
+
+          throw new Error(
+            "فشل إنشاء بيانات الطالب: " +
+            submissionError.message
+          );
+
         }
 
 
-        // التحقق من المرحلة
-
-        if (!stage) {
-
-          errorMessage.textContent =
-            "من فضلك اختر المرحلة الدراسية";
-
-          errorMessage.style.display =
-            "block";
-
-          return;
-        }
+        submissionId =
+          submission.id;
 
 
-        // التحقق من الملفات
+        // ==========================================
+        // 2. رفع كل الملفات
+        // ==========================================
 
-        if (filesInput.files.length === 0) {
+        for (
+          const file
+          of Array.from(filesInput.files)
+        ) {
 
-          errorMessage.textContent =
-            "من فضلك اختر ملف واحد على الأقل";
-
-          errorMessage.style.display =
-            "block";
-
-          return;
-        }
-
-
-        // منع الضغط أثناء الرفع
-
-        submitBtn.disabled = true;
-
-        submitBtn.textContent =
-          "جاري إرسال الواجب...";
+          const safeFileName =
+            cleanFileName(file.name);
 
 
-        try {
-
-          const formData =
-            new FormData();
+          const uniqueName =
+            `${Date.now()}-${crypto.randomUUID()}-${safeFileName}`;
 
 
-          // بيانات الطالب
-
-          formData.append(
-            "studentName",
-            studentName
-          );
-
-          formData.append(
-            "stage",
-            stage
-          );
+          const storagePath =
+            `${submissionId}/${uniqueName}`;
 
 
-          // إضافة كل الملفات
-
-          Array.from(filesInput.files).forEach(
-            function (file) {
-
-              formData.append(
-                "files",
-                file
-              );
-
-            }
-          );
-
-
-          // إرسال البيانات إلى Backend
-
-          const response =
-            await fetch(
-              `${API_URL}/upload`,
+          const {
+            error: uploadError
+          } = await supabaseClient
+            .storage
+            .from("homework")
+            .upload(
+              storagePath,
+              file,
               {
-                method: "POST",
-                body: formData
+                cacheControl: "3600",
+                upsert: false
               }
             );
 
 
-          const data =
-            await response.json();
+          if (uploadError) {
 
-
-          if (!response.ok || !data.success) {
+            console.error(
+              "Storage upload error:",
+              uploadError
+            );
 
             throw new Error(
-              data.message ||
-              "حدث خطأ أثناء إرسال الواجب"
+              "فشل رفع الملف " +
+              file.name +
+              ": " +
+              uploadError.message
             );
 
           }
 
 
-          // نجاح
-
-          successMessage.textContent =
-            "تم إرسال الواجب بنجاح ✅";
-
-          successMessage.style.display =
-            "block";
-
-
-          // تفريغ الفورم
-
-          form.reset();
-
-          fileList.innerHTML = "";
-
-          fileList.style.display =
-            "none";
-
-
-        } catch (error) {
-
-          console.error(
-            "Upload error:",
-            error
+          uploadedPaths.push(
+            storagePath
           );
 
-          errorMessage.textContent =
-            "تعذر إرسال الواجب. تأكد من اتصال السيرفر ثم حاول مرة أخرى.";
 
-          errorMessage.style.display =
-            "block";
+          // ==========================================
+          // 3. تسجيل الملف في قاعدة البيانات
+          // ==========================================
 
-        } finally {
+          const {
+            error: fileRecordError
+          } = await supabaseClient
+            .from("submission_files")
+            .insert({
 
-          submitBtn.disabled = false;
+              submission_id:
+                submissionId,
 
-          submitBtn.textContent =
-            "إرسال الواجب";
+              original_name:
+                file.name,
+
+              storage_path:
+                storagePath
+
+            });
+
+
+          if (fileRecordError) {
+
+            console.error(
+              "File record error:",
+              fileRecordError
+            );
+
+            throw new Error(
+              "فشل تسجيل الملف " +
+              file.name +
+              ": " +
+              fileRecordError.message
+            );
+
+          }
 
         }
 
-      }
-    );
 
-  </script>
+        // ==========================================
+        // نجاح
+        // ==========================================
+
+        successMessage.textContent =
+          "تم إرسال الواجب بنجاح ✅";
+
+        successMessage.style.display =
+          "block";
+
+
+        form.reset();
+
+        fileList.innerHTML = "";
+
+        fileList.style.display =
+          "none";
+
+
+      } catch (error) {
+
+        console.error(
+          "Upload error:",
+          error
+        );
+
+
+        // ==========================================
+        // تنظيف الملفات التي تم رفعها
+        // ==========================================
+
+        if (uploadedPaths.length > 0) {
+
+          await supabaseClient
+            .storage
+            .from("homework")
+            .remove(uploadedPaths);
+
+        }
+
+
+        // حذف submission لو حصل فشل
+        // أثناء عملية الرفع
+
+        if (submissionId) {
+
+          await supabaseClient
+            .from("submissions")
+            .delete()
+            .eq("id", submissionId);
+
+        }
+
+
+        errorMessage.textContent =
+          error.message ||
+          "حدث خطأ أثناء إرسال الواجب";
+
+
+        errorMessage.style.display =
+          "block";
+
+      } finally {
+
+        submitBtn.disabled = false;
+
+        submitBtn.textContent =
+          "إرسال الواجب";
+
+      }
+
+    }
+  );
+
+</script>
 
 </body>
 
