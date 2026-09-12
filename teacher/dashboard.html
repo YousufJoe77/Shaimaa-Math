@@ -1,0 +1,756 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>ميس شيماء ماث | لوحة التحكم</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Cairo", sans-serif;
+        background: #f5f7fb;
+        color: #18212f;
+        min-height: 100vh;
+      }
+
+      .header {
+        background: linear-gradient(135deg, #6c4cff, #8f6cff);
+        color: white;
+        padding: 28px 20px;
+        box-shadow: 0 8px 30px rgba(108, 76, 255, 0.18);
+      }
+
+      .header-inner {
+        max-width: 1100px;
+        margin: auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+      }
+
+      .brand h1 {
+        font-size: 25px;
+        margin-bottom: 5px;
+      }
+
+      .brand p {
+        opacity: 0.9;
+        font-size: 14px;
+      }
+
+      .refresh-btn {
+        border: none;
+        background: white;
+        color: #6c4cff;
+        padding: 11px 18px;
+        border-radius: 12px;
+        font-family: inherit;
+        font-weight: 700;
+        cursor: pointer;
+        transition: 0.2s;
+      }
+
+      .refresh-btn:hover {
+        transform: translateY(-2px);
+      }
+
+      .container {
+        max-width: 1100px;
+        margin: 30px auto;
+        padding: 0 20px;
+      }
+
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 18px;
+        margin-bottom: 28px;
+      }
+
+      .stat-card {
+        background: white;
+        border-radius: 18px;
+        padding: 22px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.05);
+        border: 1px solid #edf0f5;
+      }
+
+      .stat-title {
+        color: #737b8c;
+        font-size: 14px;
+        margin-bottom: 8px;
+      }
+
+      .stat-number {
+        font-size: 30px;
+        font-weight: 800;
+        color: #6c4cff;
+      }
+
+      .section-title {
+        font-size: 22px;
+        margin-bottom: 15px;
+      }
+
+      .students {
+        display: grid;
+        gap: 14px;
+      }
+
+      .student-card {
+        background: white;
+        border: 1px solid #edf0f5;
+        border-radius: 18px;
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        cursor: pointer;
+        transition: 0.2s;
+        box-shadow: 0 7px 22px rgba(0, 0, 0, 0.04);
+      }
+
+      .student-card:hover {
+        transform: translateY(-2px);
+        border-color: #cfc5ff;
+        box-shadow: 0 12px 28px rgba(108, 76, 255, 0.1);
+      }
+
+      .student-info {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+
+      .student-icon {
+        width: 52px;
+        height: 52px;
+        border-radius: 15px;
+        background: #eeeaff;
+        color: #6c4cff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+        font-weight: 800;
+      }
+
+      .student-name {
+        font-size: 17px;
+        font-weight: 800;
+        margin-bottom: 3px;
+      }
+
+      .student-stage {
+        color: #7b8494;
+        font-size: 13px;
+      }
+
+      .files-count {
+        background: #f0edff;
+        color: #6c4cff;
+        padding: 8px 13px;
+        border-radius: 10px;
+        font-size: 13px;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+
+      .empty {
+        background: white;
+        border-radius: 18px;
+        padding: 55px 20px;
+        text-align: center;
+        color: #7b8494;
+        border: 1px solid #edf0f5;
+      }
+
+      .empty-icon {
+        font-size: 45px;
+        margin-bottom: 12px;
+      }
+
+      .loading {
+        text-align: center;
+        padding: 50px;
+        color: #7b8494;
+      }
+
+      .details {
+        display: none;
+      }
+
+      .back-btn {
+        border: none;
+        background: white;
+        color: #6c4cff;
+        border: 1px solid #e1ddff;
+        padding: 10px 16px;
+        border-radius: 11px;
+        font-family: inherit;
+        font-weight: 700;
+        cursor: pointer;
+        margin-bottom: 18px;
+      }
+
+      .student-header {
+        background: white;
+        border-radius: 18px;
+        padding: 24px;
+        margin-bottom: 18px;
+        border: 1px solid #edf0f5;
+      }
+
+      .student-header h2 {
+        margin-bottom: 5px;
+      }
+
+      .student-header p {
+        color: #7b8494;
+        font-size: 14px;
+      }
+
+      .file-list {
+        display: grid;
+        gap: 12px;
+      }
+
+      .file-card {
+        background: white;
+        border: 1px solid #edf0f5;
+        border-radius: 16px;
+        padding: 18px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+      }
+
+      .file-name {
+        font-weight: 700;
+        word-break: break-word;
+      }
+
+      .file-actions {
+        display: flex;
+        gap: 8px;
+        flex-shrink: 0;
+      }
+
+      .file-btn {
+        text-decoration: none;
+        padding: 9px 13px;
+        border-radius: 10px;
+        font-size: 13px;
+        font-weight: 700;
+        font-family: inherit;
+      }
+
+      .open-btn {
+        background: #eeeaff;
+        color: #6c4cff;
+      }
+
+      .download-btn {
+        background: #6c4cff;
+        color: white;
+      }
+
+      /* زر الحذف فقط */
+
+      .delete-btn {
+        border: none;
+        background: #ffecec;
+        color: #c73535;
+        cursor: pointer;
+      }
+
+      .delete-btn:hover {
+        background: #ffdede;
+      }
+
+      .error {
+        background: #fff0f0;
+        color: #c73535;
+        border: 1px solid #ffd1d1;
+        padding: 15px;
+        border-radius: 13px;
+        margin-bottom: 20px;
+        display: none;
+      }
+
+      @media (max-width: 700px) {
+        .header-inner {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .refresh-btn {
+          width: 100%;
+        }
+
+        .stats {
+          grid-template-columns: 1fr;
+        }
+
+        .student-card {
+          align-items: flex-start;
+        }
+
+        .files-count {
+          align-self: center;
+        }
+
+        .file-card {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .file-actions {
+          width: 100%;
+        }
+
+        .file-btn {
+          flex: 1;
+          text-align: center;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <header class="header">
+      <div class="header-inner">
+        <div class="brand">
+          <h1>ميس شيماء ماث</h1>
+
+          <p>لوحة متابعة الواجبات المرسلة</p>
+        </div>
+
+        <button class="refresh-btn" onclick="loadSubmissions()">
+          ↻ تحديث البيانات
+        </button>
+      </div>
+    </header>
+
+    <main class="container">
+      <div id="errorBox" class="error"></div>
+
+      <!-- القائمة الرئيسية -->
+
+      <section id="mainView">
+        <div class="stats">
+          <div class="stat-card">
+            <div class="stat-title">عدد الطلاب الذين أرسلوا الواجب</div>
+
+            <div class="stat-number" id="studentsCount">0</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-title">إجمالي الملفات المرفوعة</div>
+
+            <div class="stat-number" id="filesCount">0</div>
+          </div>
+        </div>
+
+        <h2 class="section-title">الطلاب الذين أرسلوا الواجب</h2>
+
+        <div id="studentsContainer" class="students">
+          <div class="loading">جاري تحميل البيانات...</div>
+        </div>
+      </section>
+
+      <!-- تفاصيل الطالب -->
+
+      <section id="detailsView" class="details">
+        <button class="back-btn" onclick="showMainView()">
+          → الرجوع إلى الطلاب
+        </button>
+
+        <div id="studentHeader" class="student-header"></div>
+
+        <div id="fileList" class="file-list"></div>
+      </section>
+    </main>
+
+    <script>
+      const API_URL =
+  "https://crispy-space-barnacle-g4r5j4qjxx5gf9v55-3000.app.github.dev";
+
+      let submissions = [];
+
+      /* تحميل كل الواجبات */
+
+      async function loadSubmissions() {
+        const container = document.getElementById("studentsContainer");
+
+        const errorBox = document.getElementById("errorBox");
+
+        errorBox.style.display = "none";
+
+        container.innerHTML = `
+        <div class="loading">
+            جاري تحميل البيانات...
+        </div>
+    `;
+
+        try {
+          const response = await fetch(`${API_URL}/submissions`);
+
+          if (!response.ok) {
+            throw new Error("فشل الاتصال بالسيرفر");
+          }
+
+          const data = await response.json();
+
+          if (!data.success) {
+            throw new Error(data.message || "حدث خطأ");
+          }
+
+          submissions = data.submissions || [];
+
+          renderStudents();
+        } catch (error) {
+          console.error(error);
+
+          container.innerHTML = "";
+
+          errorBox.textContent =
+            "مش قادر أوصل للسيرفر. تأكد إن node server.js شغال.";
+
+          errorBox.style.display = "block";
+        }
+      }
+
+      /* عرض الطلاب */
+
+      function renderStudents() {
+        const container = document.getElementById("studentsContainer");
+
+        const studentsCount = document.getElementById("studentsCount");
+
+        const filesCount = document.getElementById("filesCount");
+
+        studentsCount.textContent = submissions.length;
+
+        let totalFiles = 0;
+
+        submissions.forEach((submission) => {
+          if (submission.files) {
+            totalFiles += submission.files.length;
+          }
+        });
+
+        filesCount.textContent = totalFiles;
+
+        /* لا يوجد طلاب */
+
+        if (submissions.length === 0) {
+          container.innerHTML = `
+
+            <div class="empty">
+
+                <div class="empty-icon">
+                    📭
+                </div>
+
+                <h3>
+                    لا توجد واجبات مرسلة حتى الآن
+                </h3>
+
+                <p>
+                    عندما يقوم أحد الطلاب بإرسال واجبه سيظهر هنا.
+                </p>
+
+            </div>
+
+        `;
+
+          return;
+        }
+
+        container.innerHTML = "";
+
+        submissions.forEach((submission) => {
+          const card = document.createElement("div");
+
+          card.className = "student-card";
+
+          card.onclick = function () {
+            showStudent(submission.id);
+          };
+
+          const firstLetter = submission.studentName
+            ? submission.studentName.trim().charAt(0)
+            : "ط";
+
+          const filesNumber = submission.files ? submission.files.length : 0;
+
+          card.innerHTML = `
+
+            <div class="student-info">
+
+                <div class="student-icon">
+
+                    ${escapeHTML(firstLetter)}
+
+                </div>
+
+
+                <div>
+
+                    <div class="student-name">
+
+                        ${escapeHTML(submission.studentName)}
+
+                    </div>
+
+
+                    <div class="student-stage">
+
+                        ${escapeHTML(submission.stage)}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="files-count">
+
+                ${filesNumber} ملف
+
+            </div>
+
+        `;
+
+          container.appendChild(card);
+        });
+      }
+
+      /* فتح تفاصيل طالب */
+
+      function showStudent(id) {
+        const submission = submissions.find((item) => item.id === id);
+
+        if (!submission) {
+          return;
+        }
+
+        document.getElementById("mainView").style.display = "none";
+
+        document.getElementById("detailsView").style.display = "block";
+
+        const studentHeader = document.getElementById("studentHeader");
+
+        const date = new Date(submission.submittedAt);
+
+        const formattedDate = date.toLocaleString("ar-EG");
+
+        studentHeader.innerHTML = `
+
+        <h2>
+
+            ${escapeHTML(submission.studentName)}
+
+        </h2>
+
+
+        <p>
+
+            ${escapeHTML(submission.stage)}
+
+        </p>
+
+
+        <p style="margin-top:8px;">
+
+            وقت الإرسال:
+            ${escapeHTML(formattedDate)}
+
+        </p>
+
+    `;
+
+        const fileList = document.getElementById("fileList");
+
+        fileList.innerHTML = "";
+
+        if (!submission.files || submission.files.length === 0) {
+          fileList.innerHTML = `
+
+            <div class="empty">
+
+                لا توجد ملفات لهذا الواجب.
+
+            </div>
+
+        `;
+
+          return;
+        }
+
+        submission.files.forEach((file, index) => {
+          const card = document.createElement("div");
+
+          card.className = "file-card";
+
+          const safeURL = file.url.replace("http://localhost:3000", API_URL);
+
+          card.innerHTML = `
+
+                <div class="file-name">
+
+                    📄
+                    ${escapeHTML(file.originalName)}
+
+                </div>
+
+
+                <div class="file-actions">
+
+                    <a
+                        class="file-btn open-btn"
+                        href="${safeURL}"
+                        target="_blank"
+                    >
+                        فتح
+                    </a>
+
+
+                    <a
+                        class="file-btn download-btn"
+                        href="${safeURL}"
+                        download="${escapeHTML(file.originalName)}"
+                    >
+                        تحميل
+                    </a>
+
+
+                    <button
+                        class="file-btn delete-btn"
+                        onclick="deleteFile(
+                            '${submission.id}',
+                            ${index}
+                        )"
+                    >
+                        حذف
+                    </button>
+
+                </div>
+
+            `;
+
+          fileList.appendChild(card);
+        });
+      }
+
+      /* حذف ملف */
+
+      async function deleteFile(submissionId, fileIndex) {
+        const confirmDelete = confirm("هل أنت متأكد من حذف هذا الملف؟");
+
+        if (!confirmDelete) {
+          return;
+        }
+
+        try {
+          const response = await fetch(
+            `${API_URL}/submissions/${submissionId}/files/${fileIndex}`,
+            {
+              method: "DELETE",
+            },
+          );
+
+          const data = await response.json();
+
+          if (!response.ok || !data.success) {
+            throw new Error(data.message || "حدث خطأ أثناء حذف الملف");
+          }
+
+          alert("تم حذف الملف بنجاح");
+
+          /*
+            نعيد تحميل البيانات
+            من السيرفر
+        */
+
+          await loadSubmissions();
+
+          /*
+            نجيب نسخة الطالب الجديدة
+        */
+
+          const updatedSubmission = submissions.find(
+            (item) => item.id === submissionId,
+          );
+
+          /*
+            لو الطالب لسه عنده ملفات
+            نفضل في صفحة التفاصيل
+        */
+
+          if (updatedSubmission) {
+            showStudent(submissionId);
+          } else {
+            /*
+                لو آخر ملف اتمسح
+                الطالب نفسه اختفى
+            */
+
+            showMainView();
+          }
+        } catch (error) {
+          console.error(error);
+
+          alert(error.message || "تعذر الاتصال بالسيرفر");
+        }
+      }
+
+      /* الرجوع للقائمة */
+
+      function showMainView() {
+        document.getElementById("detailsView").style.display = "none";
+
+        document.getElementById("mainView").style.display = "block";
+      }
+
+      /* حماية النصوص */
+
+      function escapeHTML(value) {
+        return String(value ?? "")
+          .replace(/&/g, "&amp;")
+
+          .replace(/</g, "&lt;")
+
+          .replace(/>/g, "&gt;")
+
+          .replace(/"/g, "&quot;")
+
+          .replace(/'/g, "&#039;");
+      }
+
+      /* تشغيل أول تحميل */
+
+      loadSubmissions();
+    </script>
+  </body>
+</html>
