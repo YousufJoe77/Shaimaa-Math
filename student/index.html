@@ -9,7 +9,10 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  >
 
   <style>
     * {
@@ -257,32 +260,54 @@
     <div class="card">
 
       <div class="header">
-        <div class="logo">م</div>
 
-        <h1>ميس شيماء ماث</h1>
+        <div class="logo">
+          م
+        </div>
+
+        <h1>
+          ميس شيماء ماث
+        </h1>
 
         <p>
           قم بإرسال الواجب الخاص بك من هنا
         </p>
+
       </div>
+
 
       <form id="homeworkForm">
 
+        <!-- اسم الطالب -->
         <div class="form-group">
+
           <label for="studentName">
             اسم الطالب
           </label>
 
-          <input type="text" id="studentName" name="studentName" placeholder="اكتب اسمك بالكامل" required>
+          <input
+            type="text"
+            id="studentName"
+            name="studentName"
+            placeholder="اكتب اسمك بالكامل"
+            required
+          >
+
         </div>
 
+
+        <!-- المرحلة -->
         <div class="form-group">
 
           <label for="stage">
             المرحلة الدراسية
           </label>
 
-          <select id="stage" name="stage" required>
+          <select
+            id="stage"
+            name="stage"
+            required
+          >
 
             <option value="">
               اختر المرحلة
@@ -316,13 +341,18 @@
 
         </div>
 
+
+        <!-- الملفات -->
         <div class="form-group">
 
           <label>
             ملفات الواجب
           </label>
 
-          <label class="upload-area" for="files">
+          <label
+            class="upload-area"
+            for="files"
+          >
 
             <div class="upload-icon">
               📚
@@ -338,27 +368,54 @@
 
           </label>
 
-          <input type="file" id="files" name="files" multiple>
 
-          <div id="fileList" class="file-list"></div>
+          <input
+            type="file"
+            id="files"
+            name="files"
+            multiple
+          >
+
+
+          <div
+            id="fileList"
+            class="file-list"
+          ></div>
 
         </div>
 
-        <button type="submit" class="submit-btn" id="submitBtn">
+
+        <!-- زر الإرسال -->
+        <button
+          type="submit"
+          class="submit-btn"
+          id="submitBtn"
+        >
           إرسال الواجب
         </button>
 
       </form>
 
-      <div id="successMessage" class="message success">
+
+      <!-- رسالة النجاح -->
+      <div
+        id="successMessage"
+        class="message success"
+      >
         تم إرسال الواجب بنجاح ✅
       </div>
 
-      <div id="errorMessage" class="message error">
+
+      <!-- رسالة الخطأ -->
+      <div
+        id="errorMessage"
+        class="message error"
+      >
         حدث خطأ أثناء إرسال الواجب ❌
       </div>
 
     </div>
+
 
     <div class="footer">
       ميس شيماء ماث © 2026
@@ -367,443 +424,522 @@
   </div>
 
 
+  <!-- =========================================
+       SUPABASE CDN
+  ========================================== -->
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-<script>
-  // ==========================================
-  // SUPABASE
-  // ==========================================
 
-  const SUPABASE_URL =
-    "https://cvnuvpufmhnbqqaijkon.supabase.co";
+  <script>
 
-  const SUPABASE_PUBLISHABLE_KEY =
-    "sb_publishable_m9cqEKWKkjDOizTNzvk4eQ_2AFu9rH0";
+    // =========================================
+    // SUPABASE
+    // =========================================
 
-  const supabaseClient =
-    window.supabase.createClient(
-      SUPABASE_URL,
-      SUPABASE_PUBLISHABLE_KEY
-    );
+    const SUPABASE_URL =
+      "https://cvnuvpufmhnbqqaijkon.supabase.co";
 
+    const SUPABASE_PUBLISHABLE_KEY =
+      "sb_publishable_m9cqEKWKkjDOizTNzvk4eQ_2AFu9rH0";
 
-  // ==========================================
-  // العناصر
-  // ==========================================
 
-  const form =
-    document.getElementById("homeworkForm");
+    const supabaseClient =
+      window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_PUBLISHABLE_KEY
+      );
 
-  const filesInput =
-    document.getElementById("files");
 
-  const fileList =
-    document.getElementById("fileList");
+    // =========================================
+    // ELEMENTS
+    // =========================================
 
-  const submitBtn =
-    document.getElementById("submitBtn");
+    const form =
+      document.getElementById("homeworkForm");
 
-  const successMessage =
-    document.getElementById("successMessage");
+    const filesInput =
+      document.getElementById("files");
 
-  const errorMessage =
-    document.getElementById("errorMessage");
+    const fileList =
+      document.getElementById("fileList");
 
+    const submitBtn =
+      document.getElementById("submitBtn");
 
-  // ==========================================
-  // عرض الملفات المختارة
-  // ==========================================
+    const successMessage =
+      document.getElementById("successMessage");
 
-  filesInput.addEventListener("change", function () {
+    const errorMessage =
+      document.getElementById("errorMessage");
 
-    fileList.innerHTML = "";
 
-    if (filesInput.files.length === 0) {
-      fileList.style.display = "none";
-      return;
-    }
+    // =========================================
+    // SHOW SELECTED FILES
+    // =========================================
 
-    fileList.style.display = "block";
-
-    Array.from(filesInput.files).forEach(function (file) {
-
-      const item =
-        document.createElement("div");
-
-      item.className = "file-item";
-
-
-      const name =
-        document.createElement("div");
-
-      name.className = "file-name";
-      name.textContent = file.name;
-
-
-      const size =
-        document.createElement("div");
-
-      size.className = "file-size";
-      size.textContent =
-        formatFileSize(file.size);
-
-
-      item.appendChild(name);
-      item.appendChild(size);
-
-      fileList.appendChild(item);
-
-    });
-
-  });
-
-
-  // ==========================================
-  // حجم الملف
-  // ==========================================
-
-  function formatFileSize(bytes) {
-
-    if (bytes < 1024) {
-      return bytes + " B";
-    }
-
-    if (bytes < 1024 * 1024) {
-
-      return (
-        bytes / 1024
-      ).toFixed(1) + " KB";
-
-    }
-
-    return (
-      bytes / (1024 * 1024)
-    ).toFixed(1) + " MB";
-
-  }
-
-
-  // ==========================================
-  // إخفاء الرسائل
-  // ==========================================
-
-  function hideMessages() {
-
-    successMessage.style.display = "none";
-    errorMessage.style.display = "none";
-
-  }
-
-
-  // ==========================================
-  // تنظيف اسم الملف
-  // ==========================================
-
-  function cleanFileName(fileName) {
-
-    return fileName
-      .replace(/[^\u0600-\u06FFa-zA-Z0-9._-]/g, "_")
-      .replace(/_+/g, "_");
-
-  }
-
-
-  // ==========================================
-  // إرسال الواجب
-  // ==========================================
-
-  form.addEventListener(
-    "submit",
-    async function (event) {
-
-      event.preventDefault();
-
-      hideMessages();
-
-
-      const studentName =
-        document
-          .getElementById("studentName")
-          .value
-          .trim();
-
-
-      const stage =
-        document
-          .getElementById("stage")
-          .value;
-
-
-      // ==========================================
-      // التحقق
-      // ==========================================
-
-      if (!studentName) {
-
-        errorMessage.textContent =
-          "من فضلك اكتب اسم الطالب";
-
-        errorMessage.style.display =
-          "block";
-
-        return;
-
-      }
-
-
-      if (!stage) {
-
-        errorMessage.textContent =
-          "من فضلك اختر المرحلة الدراسية";
-
-        errorMessage.style.display =
-          "block";
-
-        return;
-
-      }
-
-
-      if (filesInput.files.length === 0) {
-
-        errorMessage.textContent =
-          "من فضلك اختر ملف واحد على الأقل";
-
-        errorMessage.style.display =
-          "block";
-
-        return;
-
-      }
-
-
-      // ==========================================
-      // بدء الرفع
-      // ==========================================
-
-      submitBtn.disabled = true;
-
-      submitBtn.textContent =
-        "جاري إرسال الواجب...";
-
-
-      let submissionId = null;
-
-      const uploadedPaths = [];
-
-
-      try {
-
-        // ==========================================
-        // 1. إنشاء تسليم جديد
-        // ==========================================
-
-        const {
-          data: submission,
-          error: submissionError
-        } = await supabaseClient
-          .from("submissions")
-          .insert({
-            student_name: studentName,
-            stage: stage
-          })
-          .select("id")
-          .single();
-
-
-        if (submissionError) {
-
-          console.error(
-            "Submission error:",
-            submissionError
-          );
-
-          throw new Error(
-            "فشل إنشاء بيانات الطالب: " +
-            submissionError.message
-          );
-
-        }
-
-
-        submissionId =
-          submission.id;
-
-
-        // ==========================================
-        // 2. رفع كل الملفات
-        // ==========================================
-
-        for (
-          const file
-          of Array.from(filesInput.files)
-        ) {
-
-          const safeFileName =
-            cleanFileName(file.name);
-
-
-          const uniqueName =
-            `${Date.now()}-${crypto.randomUUID()}-${safeFileName}`;
-
-
-          const storagePath =
-            `${submissionId}/${uniqueName}`;
-
-
-          const {
-            error: uploadError
-          } = await supabaseClient
-            .storage
-            .from("homework")
-            .upload(
-              storagePath,
-              file,
-              {
-                cacheControl: "3600",
-                upsert: false
-              }
-            );
-
-
-          if (uploadError) {
-
-            console.error(
-              "Storage upload error:",
-              uploadError
-            );
-
-            throw new Error(
-              "فشل رفع الملف " +
-              file.name +
-              ": " +
-              uploadError.message
-            );
-
-          }
-
-
-          uploadedPaths.push(
-            storagePath
-          );
-
-
-          // ==========================================
-          // 3. تسجيل الملف في قاعدة البيانات
-          // ==========================================
-
-          const {
-            error: fileRecordError
-          } = await supabaseClient
-            .from("submission_files")
-            .insert({
-
-              submission_id:
-                submissionId,
-
-              original_name:
-                file.name,
-
-              storage_path:
-                storagePath
-
-            });
-
-
-          if (fileRecordError) {
-
-            console.error(
-              "File record error:",
-              fileRecordError
-            );
-
-            throw new Error(
-              "فشل تسجيل الملف " +
-              file.name +
-              ": " +
-              fileRecordError.message
-            );
-
-          }
-
-        }
-
-
-        // ==========================================
-        // نجاح
-        // ==========================================
-
-        successMessage.textContent =
-          "تم إرسال الواجب بنجاح ✅";
-
-        successMessage.style.display =
-          "block";
-
-
-        form.reset();
+    filesInput.addEventListener(
+      "change",
+      function () {
 
         fileList.innerHTML = "";
 
-        fileList.style.display =
-          "none";
+
+        if (filesInput.files.length === 0) {
+
+          fileList.style.display = "none";
+
+          return;
+        }
 
 
-      } catch (error) {
+        fileList.style.display = "block";
 
-        console.error(
-          "Upload error:",
-          error
+
+        Array.from(filesInput.files).forEach(
+          function (file) {
+
+            const item =
+              document.createElement("div");
+
+            item.className =
+              "file-item";
+
+
+            const name =
+              document.createElement("div");
+
+            name.className =
+              "file-name";
+
+            name.textContent =
+              file.name;
+
+
+            const size =
+              document.createElement("div");
+
+            size.className =
+              "file-size";
+
+            size.textContent =
+              formatFileSize(file.size);
+
+
+            item.appendChild(name);
+
+            item.appendChild(size);
+
+            fileList.appendChild(item);
+
+          }
         );
 
-
-        // ==========================================
-        // تنظيف الملفات التي تم رفعها
-        // ==========================================
-
-        if (uploadedPaths.length > 0) {
-
-          await supabaseClient
-            .storage
-            .from("homework")
-            .remove(uploadedPaths);
-
-        }
+      }
+    );
 
 
-        // حذف submission لو حصل فشل
-        // أثناء عملية الرفع
+    // =========================================
+    // FORMAT FILE SIZE
+    // =========================================
 
-        if (submissionId) {
+    function formatFileSize(bytes) {
 
-          await supabaseClient
-            .from("submissions")
-            .delete()
-            .eq("id", submissionId);
+      if (bytes < 1024) {
 
-        }
-
-
-        errorMessage.textContent =
-          error.message ||
-          "حدث خطأ أثناء إرسال الواجب";
-
-
-        errorMessage.style.display =
-          "block";
-
-      } finally {
-
-        submitBtn.disabled = false;
-
-        submitBtn.textContent =
-          "إرسال الواجب";
+        return bytes + " B";
 
       }
 
-    }
-  );
 
-</script>
+      if (bytes < 1024 * 1024) {
+
+        return (
+          bytes / 1024
+        ).toFixed(1) + " KB";
+
+      }
+
+
+      return (
+        bytes / (1024 * 1024)
+      ).toFixed(1) + " MB";
+
+    }
+
+
+    // =========================================
+    // HIDE MESSAGES
+    // =========================================
+
+    function hideMessages() {
+
+      successMessage.style.display =
+        "none";
+
+      errorMessage.style.display =
+        "none";
+
+    }
+
+
+    // =========================================
+    // CLEAN FILE NAME
+    // =========================================
+
+    function cleanFileName(fileName) {
+
+      return fileName
+        .replace(
+          /[^\u0600-\u06FFa-zA-Z0-9._-]/g,
+          "_"
+        )
+        .replace(
+          /_+/g,
+          "_"
+        );
+
+    }
+
+
+    // =========================================
+    // SUBMIT HOMEWORK
+    // =========================================
+
+    form.addEventListener(
+      "submit",
+      async function (event) {
+
+        event.preventDefault();
+
+
+        hideMessages();
+
+
+        const studentName =
+          document
+            .getElementById("studentName")
+            .value
+            .trim();
+
+
+        const stage =
+          document
+            .getElementById("stage")
+            .value;
+
+
+        // =====================================
+        // VALIDATION
+        // =====================================
+
+        if (!studentName) {
+
+          errorMessage.textContent =
+            "من فضلك اكتب اسم الطالب";
+
+          errorMessage.style.display =
+            "block";
+
+          return;
+
+        }
+
+
+        if (!stage) {
+
+          errorMessage.textContent =
+            "من فضلك اختر المرحلة الدراسية";
+
+          errorMessage.style.display =
+            "block";
+
+          return;
+
+        }
+
+
+        if (filesInput.files.length === 0) {
+
+          errorMessage.textContent =
+            "من فضلك اختر ملف واحد على الأقل";
+
+          errorMessage.style.display =
+            "block";
+
+          return;
+
+        }
+
+
+        // =====================================
+        // START UPLOAD
+        // =====================================
+
+        submitBtn.disabled = true;
+
+        submitBtn.textContent =
+          "جاري إرسال الواجب...";
+
+
+        let submissionId = null;
+
+        const uploadedPaths = [];
+
+
+        try {
+
+          // ===================================
+          // 1. CREATE SUBMISSION
+          // ===================================
+
+          const {
+            data: submission,
+            error: submissionError
+          } =
+            await supabaseClient
+              .from("submissions")
+              .insert({
+                student_name: studentName,
+                stage: stage
+              })
+              .select("id")
+              .single();
+
+
+          if (submissionError) {
+
+            console.error(
+              "Submission error:",
+              submissionError
+            );
+
+            throw new Error(
+              "فشل إنشاء بيانات الطالب: " +
+              submissionError.message
+            );
+
+          }
+
+
+          submissionId =
+            submission.id;
+
+
+          // ===================================
+          // 2. UPLOAD FILES
+          // ===================================
+
+          for (
+            const file
+            of Array.from(filesInput.files)
+          ) {
+
+            const safeFileName =
+              cleanFileName(
+                file.name
+              );
+
+
+            const uniqueName =
+              `${Date.now()}-${crypto.randomUUID()}-${safeFileName}`;
+
+
+            const storagePath =
+              `${submissionId}/${uniqueName}`;
+
+
+            const {
+              error: uploadError
+            } =
+              await supabaseClient
+                .storage
+                .from("homework")
+                .upload(
+                  storagePath,
+                  file,
+                  {
+                    cacheControl: "3600",
+                    upsert: false
+                  }
+                );
+
+
+            if (uploadError) {
+
+              console.error(
+                "Storage upload error:",
+                uploadError
+              );
+
+              throw new Error(
+                "فشل رفع الملف " +
+                file.name +
+                ": " +
+                uploadError.message
+              );
+
+            }
+
+
+            uploadedPaths.push(
+              storagePath
+            );
+
+
+            // =================================
+            // 3. SAVE FILE RECORD
+            // =================================
+
+            const {
+              error: fileRecordError
+            } =
+              await supabaseClient
+                .from("submission_files")
+                .insert({
+
+                  submission_id:
+                    submissionId,
+
+                  original_name:
+                    file.name,
+
+                  storage_path:
+                    storagePath
+
+                });
+
+
+            if (fileRecordError) {
+
+              console.error(
+                "File record error:",
+                fileRecordError
+              );
+
+              throw new Error(
+                "فشل تسجيل الملف " +
+                file.name +
+                ": " +
+                fileRecordError.message
+              );
+
+            }
+
+          }
+
+
+          // ===================================
+          // SUCCESS
+          // ===================================
+
+          successMessage.textContent =
+            "تم إرسال الواجب بنجاح ✅";
+
+          successMessage.style.display =
+            "block";
+
+
+          form.reset();
+
+
+          fileList.innerHTML = "";
+
+          fileList.style.display =
+            "none";
+
+
+        } catch (error) {
+
+          console.error(
+            "Upload error:",
+            error
+          );
+
+
+          // ===================================
+          // DELETE UPLOADED FILES
+          // ===================================
+
+          if (uploadedPaths.length > 0) {
+
+            const {
+              error: cleanupError
+            } =
+              await supabaseClient
+                .storage
+                .from("homework")
+                .remove(
+                  uploadedPaths
+                );
+
+
+            if (cleanupError) {
+
+              console.error(
+                "Cleanup error:",
+                cleanupError
+              );
+
+            }
+
+          }
+
+
+          // ===================================
+          // DELETE SUBMISSION
+          // ===================================
+
+          if (submissionId) {
+
+            const {
+              error: deleteError
+            } =
+              await supabaseClient
+                .from("submissions")
+                .delete()
+                .eq(
+                  "id",
+                  submissionId
+                );
+
+
+            if (deleteError) {
+
+              console.error(
+                "Delete submission error:",
+                deleteError
+              );
+
+            }
+
+          }
+
+
+          // ===================================
+          // SHOW ERROR
+          // ===================================
+
+          errorMessage.textContent =
+            error.message ||
+            "حدث خطأ أثناء إرسال الواجب";
+
+          errorMessage.style.display =
+            "block";
+
+        } finally {
+
+          submitBtn.disabled = false;
+
+          submitBtn.textContent =
+            "إرسال الواجب";
+
+        }
+
+      }
+    );
+
+  </script>
 
 </body>
 
